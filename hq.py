@@ -214,6 +214,19 @@ class TdxHq_API(BaseSocketClient):
 
         return filecontent
 
+    def get_block_dat_ver_up(self, filename, filesize=0, reporthook=None):
+        """
+        下载板块文件（兼容 QUANTAXIS 调用）
+
+        这是 get_report_file_by_size 的别名方法，用于下载板块数据文件如 incon.dat
+
+        :param filename: 要下载的文件名（如 "incon.dat"）
+        :param filesize: 文件大小，如果不知道可以设为 0
+        :param reporthook: 下载进度回调函数
+        :return: bytearray 文件内容
+        """
+        return self.get_report_file_by_size(filename, filesize, reporthook)
+
     def do_heartbeat(self):
         self.get_security_count(random.randint(0, 1))
 

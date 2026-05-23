@@ -1,0 +1,58 @@
+pytdx 翻新后的文件结构
+========================
+
+核心修改
+--------
+hq.py                                    # 修改：添加 get_block_dat_ver_up()
+parser/get_security_list.py             # 修改：支持新版协议（16字节名称）
+parser/get_block_info.py                # 修改：添加错误处理和日志
+reader/block_reader.py                  # 修改：硬化解析逻辑
+util/__init__.py                        # 修改：导出编码函数
+
+新增模块
+--------
+util/encoding.py                        # 新增：统一编码处理模块
+  ├── decode_tdx_text()                 # 解码固定长度文本（GBK/GB18030）
+  ├── decode_tdx_code()                 # 解码证券代码（UTF-8）
+  ├── safe_encode_gbk()                 # 安全编码为 GBK
+  └── validate_text_field()             # 验证解码后的文本
+
+测试套件
+--------
+tests/
+  ├── __init__.py                       # 测试包初始化
+  ├── test_encoding.py                  # 编码处理单元测试
+  └── test_quantaxis_compatibility.py   # QA 兼容性集成测试
+
+使用示例
+--------
+examples/
+  └── usage_examples.py                 # 使用示例脚本
+      ├── 示例 1: 获取股票列表
+      ├── 示例 2: 获取实时行情
+      ├── 示例 3: 获取 K 线数据
+      ├── 示例 4: 获取板块信息
+      └── 示例 5: 使用编码工具
+
+文档
+----
+.gitignore                              # Git 忽略配置
+README_REFACTOR.md                      # 翻新说明（用户入口）
+QUICKSTART.md                           # 快速开始指南
+REFACTOR_REPORT.md                      # 详细执行报告
+CHANGELOG.md                            # 变更清单
+PROJECT_SUMMARY.md                      # 项目总结
+FILE_TREE.txt                           # 本文件
+
+计划文档（用户提供）
+-------------------
+pytdx_refresh_plan_for_quantaxis.md     # 完整翻新计划
+gotdx_pytdx_feature_comparison.md       # gotdx 与 pytdx 功能对比
+
+统计
+----
+修改的文件：5 个
+新增的文件：9 个
+文档文件：9 个
+总代码行数：约 2600 行
+总文档行数：约 2000 行

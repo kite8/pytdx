@@ -41,29 +41,74 @@ class GetBlockInfo(BaseParser):
 
 
 def get_and_parse_block_info(client, blockfile):
+    """
+    从服务器下载并解析板块文件
+
+    Args:
+        client: TdxHq_API 客户端实例
+        blockfile: 板块文件名（如 "block_zs.dat"）
+
+    Returns:
+        list: 板块数据列表，失败返回 None
+
+    Raises:
+        可能抛出 BlockReaderError 如果文件格式错误
+    """
+    import logging
+
     try:
         meta = client.get_block_info_meta(blockfile)
     except Exception as e:
+        logging.warning(f"获取板块文件 {blockfile} 元信息失败: {e}")
         return None
 
     if not meta:
+        logging.warning(f"板块文件 {blockfile} 元信息为空")
         return None
 
     size = meta['size']
-    one_chunk = 0x7530
 
+    # 验证文件大小合理性
+    if size == 0:
+        logging.info(f"板块文件 {blockfile} 大小为 0")
+        return []
+
+    if size > 10 * 1024 * 1024:  # 10MB
+        logging.warning(f"板块文件 {blockfile} 大小异常: {size} 字节")
+        return None
+
+    one_chunk = 0x7530
 
     chuncks = size // one_chunk
     if size % one_chunk != 0:
         chuncks += 1
 
     file_content = bytearray()
-    for seg in range(chuncks):
-        start = seg * one_chunk
-        piece_data = client.get_block_info(blockfile, start, size)
-        file_content.extend(piece_data)
 
-    return BlockReader().get_data(file_content, BlockReader_TYPE_FLAT)
+    try:
+        for seg in range(chuncks):
+            start = seg * one_chunk
+            piece_data = client.get_block_info(blockfile, start, size)
+
+            if not piece_data:
+                logging.warning(f"板块文件 {blockfile} 分片 {seg+1}/{chuncks} 下载失败")
+                return None
+
+            file_content.extend(piece_data)
+    except Exception as e:
+        logging.error(f"下载板块文件 {blockfile} 失败: {e}")
+        return None
+
+    # 验证下载的数据大小
+    if len(file_content) < size:
+        logging.warning(f"板块文件 {blockfile} 下载不完整: {len(file_content)}/{size} 字节")
+        return None
+
+    try:
+        return BlockReader().get_data(file_content, BlockReader_TYPE_FLAT)
+    except Exception as e:
+        logging.error(f"解析板块文件 {blockfile} 失败: {e}")
+        return None
 
 
 if __name__ == '__main__':
