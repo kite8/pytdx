@@ -80,6 +80,19 @@ Remove-Item -Recurse -Force E:\ProgramData\anaconda3\Lib\site-packages\pytdx-*.d
 & 'E:\ProgramData\anaconda3\python.exe' scripts\verify_local_install.py
 ```
 
+WSL/Linux 下还有一种表现是 `pytdx.__file__ = None`，并且 `pytdx.__path__` 指向 conda 的
+`site-packages/pytdx`。这说明残留目录把 editable 安装遮蔽成了 namespace package。
+在同一个 conda 环境里处理：
+
+```bash
+cd /mnt/d/develop/quant/pytdx
+/root/miniconda3/envs/quant/bin/python -m pip uninstall -y pytdx
+mv /root/miniconda3/envs/quant/lib/python3.11/site-packages/pytdx \
+  /root/miniconda3/envs/quant/lib/python3.11/site-packages/pytdx.shadow
+/root/miniconda3/envs/quant/bin/python -m pip install -e . --no-deps
+/root/miniconda3/envs/quant/bin/python scripts/verify_local_install.py
+```
+
 ## 6. QA 兼容 smoke 测试
 
 脚本会优先读取你指定的 `--qa-env-file` 或 `QA_ENV_FILE`，其次尝试自动发现同级 `qa_test/.env`，最后才退回到当前进程环境变量。QUANTAXIS 的 home 目录默认切到仓库内的 `.qa_home`，避免碰到 `C:\Users\kite\.quantaxis` 的旧配置。
