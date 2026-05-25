@@ -13,7 +13,7 @@ REQUIREMENTS = [
 
 setup(
     name="pytdx",
-    version="1.72.0a1",
+    version="1.72.1",
     description="Python client for TongDaXin market data servers",
     long_description=(ROOT / "README.md").read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",

@@ -9,17 +9,21 @@ still run a direct pytdx smoke against the same servers.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[2]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(WORKSPACE_ROOT) not in sys.path:
+    sys.path.insert(0, str(WORKSPACE_ROOT))
 
 
 STOCK_DEFAULT = ("119.97.185.59", 7709)
 FUTURE_DEFAULT = ("121.37.232.167", 7727)
+DEFAULT_QA_ENV_FILE = WORKSPACE_ROOT / "qa_test" / ".env"
+DEFAULT_QA_HOME = PROJECT_ROOT / ".qa_home"
 
 
 def configure_stdio():
@@ -28,6 +32,40 @@ def configure_stdio():
             stream = getattr(sys, stream_name)
             if hasattr(stream, "reconfigure"):
                 stream.reconfigure(encoding="utf-8")
+
+
+def load_env_file(env_file):
+    env_path = Path(env_file)
+    if not env_path.exists():
+        return False
+
+    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if not key:
+            continue
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+            value = value[1:-1]
+        os.environ[key] = value
+
+    return True
+
+
+def prepare_qa_environment(env_file, qa_home):
+    if qa_home:
+        qa_home_path = Path(qa_home)
+        qa_home_path.mkdir(parents=True, exist_ok=True)
+        os.environ["HOME"] = str(qa_home_path)
+        os.environ["USERPROFILE"] = str(qa_home_path)
+
+    if env_file:
+        loaded = load_env_file(env_file)
+        if not loaded:
+            print(f"⚠️  未找到 QA 环境配置文件: {env_file}")
 
 
 def load_qa_fetchers():
@@ -73,16 +111,23 @@ def check_value(results, label, func, predicate, detail_func=str):
     return value
 
 
-def check_frame_call(results, label, func, required_columns, min_rows=1):
+def check_frame_call(results, label, func, required_columns, required_index_names=None, min_rows=1):
     try:
         frame = func()
     except Exception as exc:
         results.append((label, False, describe_exception(exc)))
         return None
-    return check_frame(results, label, frame, required_columns, min_rows=min_rows)
+    return check_frame(
+        results,
+        label,
+        frame,
+        required_columns,
+        required_index_names=required_index_names,
+        min_rows=min_rows,
+    )
 
 
-def check_frame(results, label, frame, required_columns, min_rows=1):
+def check_frame(results, label, frame, required_columns, required_index_names=None, min_rows=1):
     if frame is None:
         results.append((label, False, "returned None"))
         return None
@@ -95,6 +140,13 @@ def check_frame(results, label, frame, required_columns, min_rows=1):
     if missing:
         results.append((label, False, f"missing columns: {missing}"))
         return None
+
+    if required_index_names:
+        index_names = [name for name in getattr(frame.index, "names", [getattr(frame.index, "name", None)]) if name is not None]
+        missing_index = [name for name in required_index_names if name not in index_names]
+        if missing_index:
+            results.append((label, False, f"missing index names: {missing_index}"))
+            return None
 
     if len(frame) < min_rows:
         results.append((label, False, f"row count < {min_rows}"))
@@ -205,28 +257,30 @@ def run_qa_smoke(stock_ip, stock_port, future_ip, future_port):
         results,
         "qa_stock_block",
         lambda: qa["QA_fetch_get_stock_block"](ip=stock_ip, port=stock_port),
-        ["blockname", "block_type", "code_index", "code"],
+        ["blockname", "code", "type", "source"],
     )
 
     check_frame_call(
         results,
         "qa_stock_realtime",
         lambda: qa["QA_fetch_get_stock_realtime"](["000001", "600000"], ip=stock_ip, port=stock_port),
-        ["datetime", "servertime", "code", "open", "high", "low", "price", "vol"],
+        ["servertime", "active1", "active2", "last_close", "open", "high", "low", "price", "vol"],
+        required_index_names=["datetime", "code"],
     )
 
     check_frame_call(
         results,
         "qa_stock_day",
         lambda: qa["QA_fetch_get_stock_day"]("000001", "2020-01-01", "2020-01-10", ip=stock_ip, port=stock_port),
-        ["open", "close", "high", "low", "vol", "amount", "datetime"],
+        ["code", "date_stamp", "open", "close", "high", "low", "vol", "amount"],
+        required_index_names=["date"],
     )
 
     future_list = check_frame_call(
         results,
         "qa_extension_market",
         lambda: qa["QA_fetch_get_extensionmarket_list"](ip=future_ip, port=future_port),
-        ["market", "category", "name", "short_name"],
+        ["market", "category", "code", "name", "desc"],
     )
 
     if future_list is not None:
@@ -259,6 +313,8 @@ def main():
     parser.add_argument("--future-ip", default=FUTURE_DEFAULT[0])
     parser.add_argument("--future-port", type=int, default=FUTURE_DEFAULT[1])
     parser.add_argument("--timeout", type=int, default=10)
+    parser.add_argument("--qa-env-file", default=str(DEFAULT_QA_ENV_FILE))
+    parser.add_argument("--qa-home", default=str(DEFAULT_QA_HOME))
     parser.add_argument(
         "--mode",
         choices=("auto", "direct", "qa", "both"),
@@ -280,6 +336,7 @@ def main():
 
     if args.mode in ("qa", "both", "auto"):
         try:
+            prepare_qa_environment(args.qa_env_file, args.qa_home)
             qa_results = run_qa_smoke(args.stock_ip, args.stock_port, args.future_ip, args.future_port)
             overall = print_summary("QUANTAXIS smoke", qa_results) and overall
         except ImportError as exc:

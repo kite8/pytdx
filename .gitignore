@@ -40,6 +40,7 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+.qa_home/
 
 # Logs
 *.log

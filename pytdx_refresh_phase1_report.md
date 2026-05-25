@@ -64,3 +64,30 @@
 | `python tests\test_quantaxis_compatibility.py --help` | 旧入口可用，并透出 smoke 脚本参数。 |
 | `python scripts\qa_compat_smoke.py --mode direct ...` | 10/11 passed；股票列表、板块、行情、K 线、期货合约列表通过；`get_markets()` 在 `121.37.232.167:7727` 超时。 |
 | `python scripts\verify_local_install.py` | 当前 Anaconda 仍被旧的 `E:\ProgramData\anaconda3\Lib\site-packages\pytdx` 遮蔽；清理步骤已写入 `INSTALL.md`。 |
+
+## 2026-05-25 QA smoke 字段契约修复
+
+### 原因
+
+`tests/test_quantaxis_compatibility.py` 原先把 QA 包装层当成 pytdx 低层协议直接校验：
+
+- `QA_fetch_get_stock_block()` 会主动 `drop(['block_type', 'code_index'])`
+- `QA_fetch_get_stock_realtime()` 会把 `datetime/code` 设为 index
+- `QA_fetch_get_stock_day()` 会把 `date` 设为 index，并不返回 `datetime`
+- `QA_fetch_get_extensionmarket_list()` 返回的是合约列表，不包含 `short_name`
+
+### 修复
+
+- `scripts/qa_compat_smoke.py` 增加 `required_index_names`
+- `qa_stock_block` 改为检查 QA 实际输出列
+- `qa_stock_realtime` / `qa_stock_day` 改为按 index + columns 联合检查
+- `qa_extension_market` 改为检查 `QA_fetch_get_extensionmarket_list()` 的实际字段
+- QA mode 默认读取 `E:\develop\quant\qa_test\.env`
+- QA mode 默认把 home 切到仓库内 `.qa_home`，避免落到 `C:\Users\kite\.quantaxis`
+
+### 结果
+
+| 验证 | 结果 |
+| --- | --- |
+| `python -B -m pytest tests -q -s -p no:cacheprovider` | 20 passed |
+| `python tests\\test_quantaxis_compatibility.py --mode qa ...` | 6/6 passed |
