@@ -48,7 +48,7 @@ safe_encode_gbk(text, errors='replace')
 
 **技术要点**:
 - 协议版本自动检测（基于数据长度）
-- 新版协议：41 字节/记录，16 字节名称
+- 新版协议：37 字节/记录，16 字节名称
 - 旧版协议：29 字节/记录，8 字节名称
 - 异常处理：单条记录失败不影响整体解析
 
@@ -87,7 +87,9 @@ safe_encode_gbk(text, errors='replace')
 
 ### QA 兼容性测试
 
-**测试文件**: `tests/test_quantaxis_compatibility.py`
+**QA smoke 入口**: `scripts/qa_compat_smoke.py`
+
+**兼容旧入口**: `tests/test_quantaxis_compatibility.py`
 
 **测试服务器**: 119.97.185.59:7709
 
@@ -118,7 +120,9 @@ safe_encode_gbk(text, errors='replace')
 
 1. `util/encoding.py` - 统一编码处理模块
 2. `tests/test_encoding.py` - 编码测试
-3. `tests/test_quantaxis_compatibility.py` - QA 兼容性测试
+3. `tests/test_quantaxis_compatibility.py` - QA smoke 兼容包装入口
+4. `scripts/qa_compat_smoke.py` - QA/pytdx 网络 smoke 脚本
+5. `scripts/verify_local_install.py` - 本地 editable 安装验证脚本
 4. `examples/usage_examples.py` - 使用示例
 5. `.gitignore` - Git 忽略配置
 6. `REFACTOR_REPORT.md` - 详细报告
@@ -250,7 +254,7 @@ safe_encode_gbk(text, errors='replace')
 
 2. **运行兼容性测试**:
    ```bash
-   python tests/test_quantaxis_compatibility.py --ip 119.97.185.59 --port 7709
+   python scripts/qa_compat_smoke.py --mode qa --stock-ip 119.97.185.59 --stock-port 7709 --future-ip 121.37.232.167 --future-port 7727
    ```
 
 3. **在 QA 中验证**:
@@ -345,7 +349,7 @@ safe_encode_gbk(text, errors='replace')
 python util/encoding.py
 
 # QA 兼容性测试
-python tests/test_quantaxis_compatibility.py --ip 119.97.185.59 --port 7709
+python scripts/qa_compat_smoke.py --mode qa --stock-ip 119.97.185.59 --stock-port 7709 --future-ip 121.37.232.167 --future-port 7727
 
 # 使用示例
 python examples/usage_examples.py

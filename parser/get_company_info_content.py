@@ -2,6 +2,7 @@
 
 from pytdx.parser.base import BaseParser
 from pytdx.helper import get_datetime, get_volume, get_price
+from pytdx.util.encoding import decode_tdx_text
 from collections import OrderedDict
 import struct
 import six
@@ -29,4 +30,4 @@ class GetCompanyInfoContent(BaseParser):
         _, length = struct.unpack(u'<10sH', body_buf[:12])
         pos += 12
         content = body_buf[pos: pos+length]
-        return content.decode("gbk")
+        return decode_tdx_text(content)

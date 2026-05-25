@@ -22,7 +22,17 @@ util/encoding.py                        # 新增：统一编码处理模块
 tests/
   ├── __init__.py                       # 测试包初始化
   ├── test_encoding.py                  # 编码处理单元测试
-  └── test_quantaxis_compatibility.py   # QA 兼容性集成测试
+  ├── test_security_list_parser.py      # 股票列表新旧协议单元测试
+  ├── test_block_reader.py              # 板块文件解析单元测试
+  ├── test_exhq_parsers.py              # 扩展行情 parser 单元测试
+  ├── test_hq_api.py                    # HQ API 兼容入口单元测试
+  └── test_quantaxis_compatibility.py   # QA smoke 旧入口包装
+
+脚本
+----
+scripts/
+  ├── qa_compat_smoke.py                # QA/pytdx 网络 smoke 脚本
+  └── verify_local_install.py           # 本地安装导入路径验证
 
 使用示例
 --------
@@ -37,12 +47,14 @@ examples/
 文档
 ----
 .gitignore                              # Git 忽略配置
+INSTALL.md                              # 本地安装说明
 README_REFACTOR.md                      # 翻新说明（用户入口）
 QUICKSTART.md                           # 快速开始指南
 REFACTOR_REPORT.md                      # 详细执行报告
 CHANGELOG.md                            # 变更清单
 PROJECT_SUMMARY.md                      # 项目总结
 FILE_TREE.txt                           # 本文件
+pytdx_refresh_phase1_report.md          # 第一阶段实施和验证报告
 
 计划文档（用户提供）
 -------------------
@@ -51,8 +63,8 @@ gotdx_pytdx_feature_comparison.md       # gotdx 与 pytdx 功能对比
 
 统计
 ----
-修改的文件：5 个
-新增的文件：9 个
-文档文件：9 个
+修改的文件：约 12 个
+新增的文件：约 12 个
+文档文件：约 11 个
 总代码行数：约 2600 行
 总文档行数：约 2000 行

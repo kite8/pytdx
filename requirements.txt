@@ -1,0 +1,5 @@
+click
+cryptography
+pandas
+requests
+six

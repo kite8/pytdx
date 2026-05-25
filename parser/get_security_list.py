@@ -1,7 +1,6 @@
 # coding=utf-8
 
 from pytdx.parser.base import BaseParser
-from pytdx.helper import get_datetime, get_volume, get_price
 from pytdx.util.encoding import decode_tdx_text, decode_tdx_code
 from collections import OrderedDict
 import struct
@@ -13,58 +12,46 @@ class GetSecurityList(BaseParser):
 
     支持两种协议格式：
     1. 旧版：29 字节记录，8 字节名称字段
-    2. 新版：41 字节记录，16 字节名称字段（支持更长的中英混合名称）
+    2. 新版：37 字节记录，16 字节名称字段（支持更长的中英混合名称）
 
-    自动检测协议版本并使用对应的解析逻辑。
+    默认发送新版协议 0x044d，返回字段保持 pytdx/QUANTAXIS 兼容。
     """
 
-    def setParams(self, market, start):
-        pkg = bytearray.fromhex(u'0c 01 18 64 01 01 06 00 06 00 50 04')
-        pkg_param = struct.pack("<HH", market, start)
-        pkg.extend(pkg_param)
+    DEFAULT_COUNT = 1000
+
+    def setParams(self, market, start, count=DEFAULT_COUNT):
+        # ReqHeader layout: zip, seq_id, packet_type, pkg_len1, pkg_len2, method.
+        # pkg_len includes method(2) + payload(14). The method is already in header.
+        pkg = bytearray(struct.pack("<BIBHHH", 0x0c, 0x01641801, 0x01, 16, 16, 0x044d))
+        pkg.extend(struct.pack("<HIII", market, int(start), int(count), 0))
         self.send_pkg = pkg
 
     def parseResponse(self, body_buf):
         pos = 0
+        if len(body_buf) < 2:
+            return []
+
         (num, ) = struct.unpack("<H", body_buf[:2])
         pos += 2
 
         if num == 0:
             return []
 
-        # 检测协议版本：根据剩余数据长度判断
         remaining_len = len(body_buf) - 2
 
-        # 尝试新版协议（41 字节/记录）
-        if remaining_len >= 41 and remaining_len % 41 == 0:
+        # New protocol records are 37 bytes. Old protocol records are 29 bytes.
+        if remaining_len >= num * 37:
             return self._parse_new_format(body_buf, pos, num)
-        # 尝试旧版协议（29 字节/记录）
-        elif remaining_len >= 29 and remaining_len % 29 == 0:
+        if remaining_len >= num * 29:
             return self._parse_old_format(body_buf, pos, num)
-        # 混合格式或数据不完整，尝试智能解析
-        else:
-            # 优先尝试新版
-            try:
-                if remaining_len >= num * 41:
-                    return self._parse_new_format(body_buf, pos, num)
-            except:
-                pass
 
-            # 回退到旧版
-            try:
-                if remaining_len >= num * 29:
-                    return self._parse_old_format(body_buf, pos, num)
-            except:
-                pass
-
-            # 都失败了，返回空列表并记录错误
-            import logging
-            logging.warning(f"无法解析证券列表：num={num}, remaining_len={remaining_len}")
-            return []
+        import logging
+        logging.warning("无法解析证券列表：num=%s, remaining_len=%s", num, remaining_len)
+        return []
 
     def _parse_new_format(self, body_buf, pos, num):
         """
-        解析新版协议（41 字节/记录）
+        解析新版协议（37 字节/记录）
 
         字段布局：
         - code: 6 字节（UTF-8）
@@ -72,25 +59,23 @@ class GetSecurityList(BaseParser):
         - name: 16 字节（GBK/GB18030）
         - reversed_bytes1: 4 字节
         - decimal_point: 1 字节（uint8）
-        - pre_close: 4 字节（int32）
-        - reversed_bytes2: 8 字节
+        - pre_close: 4 字节（float32）
+        - reversed_bytes2: 4 字节
         """
         stocks = []
 
         for i in range(num):
-            one_bytes = body_buf[pos: pos + 41]
+            one_bytes = body_buf[pos: pos + 37]
 
-            if len(one_bytes) < 41:
+            if len(one_bytes) < 37:
                 break
 
             try:
-                (code_bytes, volunit,
-                 name_bytes, reversed_bytes1, decimal_point,
-                 pre_close_raw, reversed_bytes2) = struct.unpack("<6sH16s4sBI8s", one_bytes)
+                (code_bytes, volunit, name_bytes, reversed_bytes1,
+                 decimal_point, pre_close, unknown2, unknown3) = struct.unpack("<6sH16s4sBfHH", one_bytes)
 
                 code = decode_tdx_code(code_bytes)
                 name = decode_tdx_text(name_bytes)
-                pre_close = get_volume(pre_close_raw)
 
                 one = OrderedDict([
                     ('code', code),
@@ -101,12 +86,12 @@ class GetSecurityList(BaseParser):
                 ])
 
                 stocks.append(one)
-                pos += 41
+                pos += 37
 
             except Exception as e:
                 import logging
-                logging.warning(f"解析新版证券列表记录失败 (index={i}): {e}")
-                pos += 41
+                logging.warning("解析新版证券列表记录失败 (index=%s): %s", i, e)
+                pos += 37
                 continue
 
         return stocks
@@ -119,10 +104,12 @@ class GetSecurityList(BaseParser):
         - code: 6 字节（UTF-8）
         - volunit: 2 字节（uint16）
         - name: 8 字节（GBK）
-        - reversed_bytes1: 4 字节
+        - legacy_unknown1: 2 字节
+        - reversed_bytes1: 2 字节
         - decimal_point: 1 字节（uint8）
-        - pre_close: 4 字节（int32）
-        - reversed_bytes2: 4 字节
+        - pre_close: 4 字节（float32）
+        - reversed_bytes2: 2 字节
+        - reversed_bytes3: 2 字节
         """
         stocks = []
 
@@ -133,13 +120,12 @@ class GetSecurityList(BaseParser):
                 break
 
             try:
-                (code_bytes, volunit,
-                 name_bytes, reversed_bytes1, decimal_point,
-                 pre_close_raw, reversed_bytes2) = struct.unpack("<6sH8s4sBI4s", one_bytes)
+                (code_bytes, volunit, name_bytes, _legacy_unknown1,
+                 _reversed_bytes1, decimal_point, pre_close,
+                 unknown2, unknown3) = struct.unpack("<6sH8sHHBfHH", one_bytes)
 
                 code = decode_tdx_code(code_bytes)
                 name = decode_tdx_text(name_bytes)
-                pre_close = get_volume(pre_close_raw)
 
                 one = OrderedDict([
                     ('code', code),
@@ -154,8 +140,17 @@ class GetSecurityList(BaseParser):
 
             except Exception as e:
                 import logging
-                logging.warning(f"解析旧版证券列表记录失败 (index={i}): {e}")
+                logging.warning("解析旧版证券列表记录失败 (index=%s): %s", i, e)
                 pos += 29
                 continue
 
         return stocks
+
+
+class GetSecurityListOld(GetSecurityList):
+    """旧版证券列表协议 0x0450，保留给需要兼容旧服务器的调用方。"""
+
+    def setParams(self, market, start, count=None):
+        pkg = bytearray.fromhex(u'0c 01 18 64 01 01 06 00 06 00 50 04')
+        pkg.extend(struct.pack("<HH", market, int(start)))
+        self.send_pkg = pkg

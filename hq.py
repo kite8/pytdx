@@ -28,7 +28,7 @@ from pytdx.parser.get_index_bars import GetIndexBarsCmd
 from pytdx.parser.get_minute_time_data import GetMinuteTimeData
 from pytdx.parser.get_security_bars import GetSecurityBarsCmd
 from pytdx.parser.get_security_count import GetSecurityCountCmd
-from pytdx.parser.get_security_list import GetSecurityList
+from pytdx.parser.get_security_list import GetSecurityList, GetSecurityListOld
 from pytdx.parser.get_security_quotes import GetSecurityQuotesCmd
 from pytdx.parser.get_transaction_data import GetTransactionData
 from pytdx.parser.get_xdxr_info import GetXdXrInfo
@@ -119,6 +119,18 @@ class TdxHq_API(BaseSocketClient):
         return cmd.call_api()
 
     @update_last_ack_time
+    def get_security_list_range(self, market, start, count=1000):
+        cmd = GetSecurityList(self.client, lock=self.lock)
+        cmd.setParams(market, start, count)
+        return cmd.call_api()
+
+    @update_last_ack_time
+    def get_security_list_old(self, market, start):
+        cmd = GetSecurityListOld(self.client, lock=self.lock)
+        cmd.setParams(market, start)
+        return cmd.call_api()
+
+    @update_last_ack_time
     def get_minute_time_data(self, market, code):
         cmd = GetMinuteTimeData(self.client, lock=self.lock)
         cmd.setParams(market, code)
@@ -194,7 +206,7 @@ class TdxHq_API(BaseSocketClient):
         :param filename the filename to download
         :param filesize the filesize to download , if you do not known the actually filesize, leave this value 0
         """
-        filecontent = bytearray(filesize)
+        filecontent = bytearray()
         current_downloaded_size = 0
         get_zero_length_package_times = 0
         while current_downloaded_size < filesize or filesize == 0:

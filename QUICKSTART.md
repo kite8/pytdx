@@ -97,21 +97,16 @@ with api.connect('119.97.185.59', 7709):
 ### 4. 完整兼容性测试（可选）
 
 ```bash
-python tests/test_quantaxis_compatibility.py --ip 119.97.185.59 --port 7709
+& 'E:\ProgramData\anaconda3\python.exe' scripts/qa_compat_smoke.py --mode direct --stock-ip 119.97.185.59 --stock-port 7709 --future-ip 121.37.232.167 --future-port 7727
 ```
 
-**预期输出**:
-```
-============================================================
-测试摘要
-============================================================
+旧入口仍可用：
 
-总计: 10 项测试
-通过: 4 项
-失败: 6 项
+```bash
+& 'E:\ProgramData\anaconda3\python.exe' tests/test_quantaxis_compatibility.py --mode direct --stock-ip 119.97.185.59 --stock-port 7709 --future-ip 121.37.232.167 --future-port 7727
 ```
 
-注意：部分失败是由于服务器数据质量问题，不影响核心功能。
+注意：扩展行情服务器可能不稳定，`get_markets()` 超时不代表股票列表和板块路径失败。
 
 ---
 
@@ -121,7 +116,8 @@ python tests/test_quantaxis_compatibility.py --ip 119.97.185.59 --port 7709
 
 ```bash
 cd E:\develop\quant\pytdx
-pip install -e .
+& 'E:\ProgramData\anaconda3\python.exe' -m pip install -e .
+& 'E:\ProgramData\anaconda3\python.exe' scripts/verify_local_install.py
 ```
 
 ### 验证
@@ -231,9 +227,8 @@ with api.connect('119.97.185.59', 7709):
 
 ### Q1: 如何确认使用的是翻新版？
 
-```python
-from pytdx.util import encoding
-print(encoding.__file__)  # 应该指向本地路径
+```bash
+& 'E:\ProgramData\anaconda3\python.exe' scripts/verify_local_install.py
 ```
 
 ### Q2: 如何回滚到原版？

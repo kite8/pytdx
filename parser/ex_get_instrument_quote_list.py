@@ -1,6 +1,7 @@
 # coding=utf-8
 
 from pytdx.parser.base import BaseParser
+from pytdx.util.encoding import decode_tdx_code
 from collections import OrderedDict
 import struct
 """
@@ -45,7 +46,7 @@ class GetInstrumentQuoteList(BaseParser):
             每个块一共300bytes
             """
             market, code = struct.unpack("<B9s", body_buf[pos: pos + 10])
-            code = code.strip(b"\0").decode("gbk") # to unicode
+            code = decode_tdx_code(code)
             pos += 10
             if self.category == 3:
                 try:

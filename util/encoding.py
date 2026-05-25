@@ -13,6 +13,16 @@
 import re
 
 
+def _decode_fixed_width_bytes(raw, encoding, errors):
+    """Decode a fixed-width TDX field and drop only an incomplete trailing char."""
+    try:
+        return raw.decode(encoding)
+    except UnicodeDecodeError as exc:
+        if exc.end >= len(raw):
+            return raw[:exc.start].decode(encoding, errors='ignore')
+        return raw.decode(encoding, errors=errors)
+
+
 def decode_tdx_text(data, encoding='gb18030', errors='replace', strip_null=True, strip_control=True):
     """
     解码 TDX 协议中的固定长度文本字段
@@ -41,23 +51,32 @@ def decode_tdx_text(data, encoding='gb18030', errors='replace', strip_null=True,
     if not data:
         return ''
 
-    # 解码
-    try:
-        text = data.decode(encoding, errors=errors)
-    except (UnicodeDecodeError, LookupError) as e:
-        # 如果 gb18030 失败，尝试 gbk
-        if encoding != 'gbk':
+    if isinstance(data, str):
+        text = data
+    else:
+        raw = bytes(data)
+        if strip_null:
+            raw = raw.rstrip(b'\x00')
+
+        encodings = []
+        for item in (encoding, 'gb18030', 'gbk'):
+            if item and item not in encodings:
+                encodings.append(item)
+
+        text = None
+        for item in encodings:
             try:
-                text = data.decode('gbk', errors=errors)
-            except:
-                # 最后兜底用 latin1（不会失败）
-                text = data.decode('latin1', errors='replace')
-        else:
-            text = data.decode('latin1', errors='replace')
+                text = _decode_fixed_width_bytes(raw, item, errors)
+                break
+            except (UnicodeDecodeError, LookupError):
+                continue
+
+        if text is None:
+            text = raw.decode('latin1', errors='replace')
 
     # 去除 \0 填充
     if strip_null:
-        text = text.rstrip('\x00')
+        text = text.replace('\x00', '')
 
     # 去除控制字符（保留换行符和制表符）
     if strip_control:

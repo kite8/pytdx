@@ -88,13 +88,14 @@ def get_and_parse_block_info(client, blockfile):
     try:
         for seg in range(chuncks):
             start = seg * one_chunk
-            piece_data = client.get_block_info(blockfile, start, size)
+            chunk_size = min(one_chunk, size - start)
+            piece_data = client.get_block_info(blockfile, start, chunk_size)
 
             if not piece_data:
                 logging.warning(f"板块文件 {blockfile} 分片 {seg+1}/{chuncks} 下载失败")
                 return None
 
-            file_content.extend(piece_data)
+            file_content.extend(piece_data[:chunk_size])
     except Exception as e:
         logging.error(f"下载板块文件 {blockfile} 失败: {e}")
         return None

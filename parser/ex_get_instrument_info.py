@@ -2,6 +2,7 @@
 
 from pytdx.parser.base import BaseParser
 from pytdx.helper import get_datetime, get_volume, get_price
+from pytdx.util.encoding import decode_tdx_text, decode_tdx_code
 from collections import OrderedDict
 import struct
 
@@ -38,17 +39,17 @@ class GetInstrumentInfo(BaseParser):
             (category, market, unused_bytes, code_raw, name_raw, desc_raw) = \
                 struct.unpack("<BB3s9s17s9s", body_buf[pos: pos+40])
 
-            code = code_raw.decode("gbk", 'ignore')
-            name = name_raw.decode("gbk", 'ignore')
-            desc = desc_raw.decode("gbk", 'ignore')
+            code = decode_tdx_code(code_raw)
+            name = decode_tdx_text(name_raw)
+            desc = decode_tdx_text(desc_raw)
 
             one = OrderedDict(
                 [
                     ("category", category),
                     ("market", market),
-                    ("code", code.rstrip("\x00")),
-                    ("name", name.rstrip("\x00")),
-                    ("desc", desc.rstrip("\x00")),
+                    ("code", code),
+                    ("name", name),
+                    ("desc", desc),
                 ]
             )
 

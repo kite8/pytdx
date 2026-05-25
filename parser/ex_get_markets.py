@@ -2,6 +2,7 @@
 
 from pytdx.parser.base import BaseParser
 from pytdx.helper import get_datetime, get_volume, get_price
+from pytdx.util.encoding import decode_tdx_text
 from collections import OrderedDict
 import struct
 
@@ -26,8 +27,8 @@ class GetMarkets(BaseParser):
             if category == 0 and market == 0:
                 continue
 
-            name = raw_name.decode("gbk")
-            short_name = raw_short_name.decode("gbk")
+            name = decode_tdx_text(raw_name)
+            short_name = decode_tdx_text(raw_short_name)
 
             result.append(OrderedDict(
                 [

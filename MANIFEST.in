@@ -1,0 +1,13 @@
+include README.md
+include INSTALL.md
+include QUICKSTART.md
+include README_REFACTOR.md
+include REFACTOR_REPORT.md
+include CHANGELOG.md
+include DELIVERY_CHECKLIST.md
+include PROJECT_SUMMARY.md
+include pytdx_refresh_plan_for_quantaxis.md
+include pytdx_refresh_phase1_report.md
+include gotdx_pytdx_feature_comparison.md
+include FILE_TREE.txt
+recursive-include scripts *.py

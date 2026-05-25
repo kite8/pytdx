@@ -2,6 +2,7 @@
 
 from pytdx.parser.base import BaseParser
 from pytdx.helper import get_datetime, get_volume, get_price
+from pytdx.util.encoding import decode_tdx_text
 from collections import OrderedDict
 import struct
 import six
@@ -36,14 +37,7 @@ class GetCompanyInfoCategory(BaseParser):
 
 
         def get_str(b):
-            p = b.find(b'\x00')
-            if p != -1:
-                b = b[0: p]
-            try:
-                n = b.decode("gbk")
-            except Exception as e:
-                n = "unkown_str"
-            return n
+            return decode_tdx_text(b)
 
         for i in range(num):
             (name, filename, start, length) = struct.unpack(u"<64s80sII", body_buf[pos: pos+ 152])
