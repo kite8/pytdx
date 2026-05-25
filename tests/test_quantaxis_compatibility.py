@@ -44,6 +44,38 @@ def test_qa_compat_smoke_script_is_importable():
     assert callable(qa_compat_smoke.run_qa_smoke)
 
 
+def test_qa_env_file_can_be_configured_explicitly(tmp_path):
+    env_file = tmp_path / ".env"
+    env_file.write_text("MONGODB_HOST=192.168.2.36\n", encoding="utf-8")
+
+    resolved, configured = qa_compat_smoke.resolve_qa_env_file(str(env_file))
+
+    assert resolved == env_file
+    assert configured is True
+
+
+def test_qa_env_file_is_optional_when_no_candidate_exists(tmp_path, monkeypatch):
+    monkeypatch.delenv("QA_ENV_FILE", raising=False)
+    monkeypatch.delenv("QA_SMOKE_ENV_FILE", raising=False)
+    monkeypatch.setattr(qa_compat_smoke, "DEFAULT_QA_ENV_FILE", tmp_path / "missing.env")
+
+    resolved, configured = qa_compat_smoke.resolve_qa_env_file()
+
+    assert resolved is None
+    assert configured is False
+
+
+def test_qa_env_file_can_be_configured_by_env_var(tmp_path, monkeypatch):
+    env_file = tmp_path / ".env"
+    env_file.write_text("REDIS_HOST=192.168.2.36\n", encoding="utf-8")
+    monkeypatch.setenv("QA_ENV_FILE", str(env_file))
+
+    resolved, configured = qa_compat_smoke.resolve_qa_env_file()
+
+    assert resolved == env_file
+    assert configured is True
+
+
 def test_qa_frame_check_accepts_required_index_names():
     frame = pd.DataFrame(
         [

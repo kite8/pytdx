@@ -82,7 +82,7 @@
 - `qa_stock_block` 改为检查 QA 实际输出列
 - `qa_stock_realtime` / `qa_stock_day` 改为按 index + columns 联合检查
 - `qa_extension_market` 改为检查 `QA_fetch_get_extensionmarket_list()` 的实际字段
-- QA mode 默认读取 `E:\develop\quant\qa_test\.env`
+- QA mode 支持 `--qa-env-file` / `QA_ENV_FILE` 显式配置；未指定时只自动使用已存在的同级 `qa_test/.env`
 - QA mode 默认把 home 切到仓库内 `.qa_home`，避免落到 `C:\Users\kite\.quantaxis`
 
 ### 结果

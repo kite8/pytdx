@@ -31,7 +31,7 @@ cd E:\develop\quant\pytdx
 & 'E:\ProgramData\anaconda3\python.exe' scripts\qa_compat_smoke.py --mode qa --stock-ip 119.97.185.59 --stock-port 7709 --future-ip 121.37.232.167 --future-port 7727
 ```
 
-脚本会优先读取 `E:\develop\quant\qa_test\.env`，并把 QUANTAXIS home 放到仓库内的 `.qa_home`。
+脚本会优先读取 `--qa-env-file` 或 `QA_ENV_FILE`，其次自动发现同级 `qa_test/.env`，最后使用进程环境变量；QUANTAXIS home 默认放到仓库内的 `.qa_home`。
 
 ## 参考
 

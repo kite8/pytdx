@@ -82,7 +82,13 @@ Remove-Item -Recurse -Force E:\ProgramData\anaconda3\Lib\site-packages\pytdx-*.d
 
 ## 6. QA 兼容 smoke 测试
 
-脚本默认会读取 `E:\develop\quant\qa_test\.env`，并把 QUANTAXIS 的 home 目录切到仓库内的 `.qa_home`，避免碰到 `C:\Users\kite\.quantaxis` 的旧配置。
+脚本会优先读取你指定的 `--qa-env-file` 或 `QA_ENV_FILE`，其次尝试自动发现同级 `qa_test/.env`，最后才退回到当前进程环境变量。QUANTAXIS 的 home 目录默认切到仓库内的 `.qa_home`，避免碰到 `C:\Users\kite\.quantaxis` 的旧配置。
+
+如果远端环境的 `.env` 不在本机同一路径，请显式指定：
+
+```powershell
+& 'E:\ProgramData\anaconda3\python.exe' scripts\qa_compat_smoke.py --mode qa --qa-env-file D:\path\to\qa_test\.env
+```
 
 在安装了 QUANTAXIS 的环境中执行：
 

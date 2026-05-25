@@ -24,6 +24,8 @@ STOCK_DEFAULT = ("119.97.185.59", 7709)
 FUTURE_DEFAULT = ("121.37.232.167", 7727)
 DEFAULT_QA_ENV_FILE = WORKSPACE_ROOT / "qa_test" / ".env"
 DEFAULT_QA_HOME = PROJECT_ROOT / ".qa_home"
+QA_ENV_FILE_VARS = ("QA_ENV_FILE", "QA_SMOKE_ENV_FILE")
+QA_HOME_VARS = ("QA_HOME", "QA_SMOKE_HOME")
 
 
 def configure_stdio():
@@ -55,17 +57,49 @@ def load_env_file(env_file):
     return True
 
 
-def prepare_qa_environment(env_file, qa_home):
-    if qa_home:
-        qa_home_path = Path(qa_home)
-        qa_home_path.mkdir(parents=True, exist_ok=True)
-        os.environ["HOME"] = str(qa_home_path)
-        os.environ["USERPROFILE"] = str(qa_home_path)
+def resolve_qa_env_file(explicit=None):
+    if explicit:
+        return Path(explicit).expanduser(), True
 
-    if env_file:
-        loaded = load_env_file(env_file)
-        if not loaded:
-            print(f"⚠️  未找到 QA 环境配置文件: {env_file}")
+    for env_var in QA_ENV_FILE_VARS:
+        value = os.getenv(env_var)
+        if value:
+            return Path(value).expanduser(), True
+
+    if DEFAULT_QA_ENV_FILE.exists():
+        return DEFAULT_QA_ENV_FILE, False
+
+    return None, False
+
+
+def resolve_qa_home(explicit=None):
+    if explicit:
+        return Path(explicit).expanduser(), True
+
+    for env_var in QA_HOME_VARS:
+        value = os.getenv(env_var)
+        if value:
+            return Path(value).expanduser(), True
+
+    return DEFAULT_QA_HOME, False
+
+
+def prepare_qa_environment(env_file, qa_home):
+    resolved_home, _ = resolve_qa_home(qa_home)
+    if resolved_home:
+        resolved_home.mkdir(parents=True, exist_ok=True)
+        os.environ["HOME"] = str(resolved_home)
+        os.environ["USERPROFILE"] = str(resolved_home)
+
+    resolved_env_file, env_configured = resolve_qa_env_file(env_file)
+    if resolved_env_file is not None:
+        loaded = load_env_file(resolved_env_file)
+        if not loaded and env_configured:
+            print(f"⚠️  未找到 QA 环境配置文件: {resolved_env_file}")
+    elif env_configured:
+        print(f"⚠️  未找到 QA 环境配置文件: {env_file or os.getenv(QA_ENV_FILE_VARS[0])}")
+    else:
+        print("ℹ️  未指定 QA 环境配置文件，使用当前进程环境变量。可通过 --qa-env-file 或 QA_ENV_FILE 指定。")
 
 
 def load_qa_fetchers():
@@ -313,8 +347,16 @@ def main():
     parser.add_argument("--future-ip", default=FUTURE_DEFAULT[0])
     parser.add_argument("--future-port", type=int, default=FUTURE_DEFAULT[1])
     parser.add_argument("--timeout", type=int, default=10)
-    parser.add_argument("--qa-env-file", default=str(DEFAULT_QA_ENV_FILE))
-    parser.add_argument("--qa-home", default=str(DEFAULT_QA_HOME))
+    parser.add_argument(
+        "--qa-env-file",
+        default=None,
+        help="path to QUANTAXIS .env file; falls back to QA_ENV_FILE / QA_SMOKE_ENV_FILE or an existing sibling qa_test/.env",
+    )
+    parser.add_argument(
+        "--qa-home",
+        default=None,
+        help="QUANTAXIS home directory; falls back to QA_HOME / QA_SMOKE_HOME or the local .qa_home directory",
+    )
     parser.add_argument(
         "--mode",
         choices=("auto", "direct", "qa", "both"),
