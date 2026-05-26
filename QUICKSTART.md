@@ -263,10 +263,10 @@ pip install pytdx==1.72  # 或其他版本
 
 ## 文档索引
 
-- `README_REFACTOR.md` - 翻新说明
-- `REFACTOR_REPORT.md` - 详细报告
+- `docs/refactor/README_REFACTOR.md` - 翻新说明
+- `docs/refactor/REFACTOR_REPORT.md` - 详细报告
 - `CHANGELOG.md` - 变更清单
-- `pytdx_refresh_plan_for_quantaxis.md` - 完整计划
+- `docs/pytdx-refresh/pytdx_refresh_plan_for_quantaxis.md` - 完整计划
 - `examples/usage_examples.py` - 使用示例
 
 ---

@@ -195,7 +195,7 @@ with api.connect('119.97.185.59', 7709):
 - `tests/test_encoding.py` - 编码测试
 - `tests/test_quantaxis_compatibility.py` - QA 兼容性测试
 - `.gitignore` - Git 忽略文件
-- `REFACTOR_REPORT.md` - 本报告
+- `docs/refactor/REFACTOR_REPORT.md` - 本报告
 
 ## 总结
 

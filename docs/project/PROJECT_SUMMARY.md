@@ -116,25 +116,25 @@ safe_encode_gbk(text, errors='replace')
 4. `reader/block_reader.py` - 硬化解析逻辑
 5. `util/__init__.py` - 导出编码函数
 
-### 新增的文件（9 个）
+### 新增的文件（11 个）
 
 1. `util/encoding.py` - 统一编码处理模块
 2. `tests/test_encoding.py` - 编码测试
 3. `tests/test_quantaxis_compatibility.py` - QA smoke 兼容包装入口
 4. `scripts/qa_compat_smoke.py` - QA/pytdx 网络 smoke 脚本
 5. `scripts/verify_local_install.py` - 本地 editable 安装验证脚本
-4. `examples/usage_examples.py` - 使用示例
-5. `.gitignore` - Git 忽略配置
-6. `REFACTOR_REPORT.md` - 详细报告
-7. `README_REFACTOR.md` - 翻新说明
-8. `CHANGELOG.md` - 变更清单
-9. `QUICKSTART.md` - 快速开始
+6. `examples/usage_examples.py` - 使用示例
+7. `.gitignore` - Git 忽略配置
+8. `docs/refactor/REFACTOR_REPORT.md` - 详细报告
+9. `docs/refactor/README_REFACTOR.md` - 翻新说明
+10. `CHANGELOG.md` - 变更清单
+11. `QUICKSTART.md` - 快速开始
 
 ### 文档文件（3 个）
 
-1. `pytdx_refresh_plan_for_quantaxis.md` - 完整计划（用户提供）
-2. `gotdx_pytdx_feature_comparison.md` - 功能对比（用户提供）
-3. `PROJECT_SUMMARY.md` - 本文件
+1. `docs/pytdx-refresh/pytdx_refresh_plan_for_quantaxis.md` - 完整计划（用户提供）
+2. `docs/pytdx-refresh/gotdx_pytdx_feature_comparison.md` - 功能对比（用户提供）
+3. `docs/project/PROJECT_SUMMARY.md` - 本文件
 
 ---
 
@@ -217,7 +217,7 @@ safe_encode_gbk(text, errors='replace')
 
 ## 后续计划
 
-根据 `pytdx_refresh_plan_for_quantaxis.md`：
+根据 `docs/pytdx-refresh/pytdx_refresh_plan_for_quantaxis.md`：
 
 ### 第 2 阶段：主行情与扩展行情协议翻新
 
@@ -358,10 +358,10 @@ python examples/usage_examples.py
 ### B. 文档索引
 
 - `QUICKSTART.md` - 快速开始
-- `README_REFACTOR.md` - 翻新说明
-- `REFACTOR_REPORT.md` - 详细报告
+- `docs/refactor/README_REFACTOR.md` - 翻新说明
+- `docs/refactor/REFACTOR_REPORT.md` - 详细报告
 - `CHANGELOG.md` - 变更清单
-- `PROJECT_SUMMARY.md` - 本文件
+- `docs/project/PROJECT_SUMMARY.md` - 本文件
 
 ### C. 联系方式
 

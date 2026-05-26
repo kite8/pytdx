@@ -21,11 +21,11 @@
 
 ### ✅ 文档
 
-- [x] 翻新说明（`README_REFACTOR.md`）
+- [x] 翻新说明（`docs/refactor/README_REFACTOR.md`）
 - [x] 快速开始（`QUICKSTART.md`）
-- [x] 详细报告（`REFACTOR_REPORT.md`）
+- [x] 详细报告（`docs/refactor/REFACTOR_REPORT.md`）
 - [x] 变更清单（`CHANGELOG.md`）
-- [x] 项目总结（`PROJECT_SUMMARY.md`）
+- [x] 项目总结（`docs/project/PROJECT_SUMMARY.md`）
 - [x] 文件树（`FILE_TREE.txt`）
 - [x] 使用示例（`examples/usage_examples.py`）
 
@@ -70,17 +70,17 @@ python examples/usage_examples.py
 - [x] `tests/test_quantaxis_compatibility.py`
 - [x] `examples/usage_examples.py`
 - [x] `.gitignore`
-- [x] `README_REFACTOR.md`
+- [x] `docs/refactor/README_REFACTOR.md`
 - [x] `QUICKSTART.md`
-- [x] `REFACTOR_REPORT.md`
+- [x] `docs/refactor/REFACTOR_REPORT.md`
 
 ### 文档文件（6 个）
 - [x] `CHANGELOG.md`
-- [x] `PROJECT_SUMMARY.md`
+- [x] `docs/project/PROJECT_SUMMARY.md`
 - [x] `FILE_TREE.txt`
-- [x] `DELIVERY_CHECKLIST.md`（本文件）
-- [x] `pytdx_refresh_plan_for_quantaxis.md`（用户提供）
-- [x] `gotdx_pytdx_feature_comparison.md`（用户提供）
+- [x] `docs/project/DELIVERY_CHECKLIST.md`（本文件）
+- [x] `docs/pytdx-refresh/pytdx_refresh_plan_for_quantaxis.md`（用户提供）
+- [x] `docs/pytdx-refresh/gotdx_pytdx_feature_comparison.md`（用户提供）
 
 ## 质量指标
 
@@ -222,7 +222,7 @@ python examples/usage_examples.py
 
 ### 文档
 - 快速开始：`QUICKSTART.md`
-- 详细报告：`REFACTOR_REPORT.md`
+- 详细报告：`docs/refactor/REFACTOR_REPORT.md`
 - 使用示例：`examples/usage_examples.py`
 
 ### 联系方式

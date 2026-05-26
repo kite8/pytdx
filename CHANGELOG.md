@@ -138,7 +138,7 @@ python tests/test_quantaxis_compatibility.py --ip 119.97.185.59 --port 7709
 
 ---
 
-### 6. `REFACTOR_REPORT.md`
+### 6. `docs/refactor/REFACTOR_REPORT.md`
 **功能**: 详细的翻新执行报告
 
 **内容**:
@@ -151,7 +151,7 @@ python tests/test_quantaxis_compatibility.py --ip 119.97.185.59 --port 7709
 
 ---
 
-### 7. `README_REFACTOR.md`
+### 7. `docs/refactor/README_REFACTOR.md`
 **功能**: 翻新说明文档
 
 **内容**:
@@ -256,7 +256,7 @@ pip install -e .
 
 ## 后续计划
 
-参考 `pytdx_refresh_plan_for_quantaxis.md`：
+参考 `docs/pytdx-refresh/pytdx_refresh_plan_for_quantaxis.md`：
 
 - **第 2 阶段**: 主行情与扩展行情协议翻新
 - **第 3 阶段**: 连接、host、并发和稳定性

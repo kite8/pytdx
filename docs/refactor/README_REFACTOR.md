@@ -144,13 +144,15 @@ pytdx/
 ├── examples/
 │   └── usage_examples.py    # 新增：使用示例
 ├── .gitignore               # 新增
-├── REFACTOR_REPORT.md       # 新增：详细报告
-└── README_REFACTOR.md       # 本文件
+└── docs/
+    └── refactor/
+        ├── REFACTOR_REPORT.md       # 新增：详细报告
+        └── README_REFACTOR.md       # 本文件
 ```
 
 ## 后续计划
 
-根据 `pytdx_refresh_plan_for_quantaxis.md`，后续阶段包括：
+根据 `docs/pytdx-refresh/pytdx_refresh_plan_for_quantaxis.md`，后续阶段包括：
 
 - **第 2 阶段**: 主行情与扩展行情协议翻新
 - **第 3 阶段**: 连接、host、并发和稳定性
@@ -158,9 +160,9 @@ pytdx/
 
 ## 参考文档
 
-- `pytdx_refresh_plan_for_quantaxis.md` - 完整翻新计划
-- `REFACTOR_REPORT.md` - 详细执行报告
-- `gotdx_pytdx_feature_comparison.md` - gotdx 与 pytdx 功能对比
+- `docs/pytdx-refresh/pytdx_refresh_plan_for_quantaxis.md` - 完整翻新计划
+- `docs/refactor/REFACTOR_REPORT.md` - 详细执行报告
+- `docs/pytdx-refresh/gotdx_pytdx_feature_comparison.md` - gotdx 与 pytdx 功能对比
 
 ## 联系方式
 
